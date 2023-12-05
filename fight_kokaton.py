@@ -222,9 +222,7 @@ def main():
                     score.value += 1
                     pg.display.update()
                     time.sleep(1) 
-        bombs = [bomb for bomb in bombs if bomb is not None]
-
-        
+        bombs = [bomb for bomb in bombs if bomb is not None]    
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
