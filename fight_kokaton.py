@@ -136,6 +136,30 @@ class Beam:
         self.rct.move_ip(self.vx, self.vy)
         screen.blit(self.img, self.rct)
 
+class Explosion:
+    def __init__(self, center: tuple[int, int]):
+        self.images = [
+            pg.image.load("ex03/fig/explosion.gif"),
+            pg.transform.flip(pg.image.load("ex03/fig/explosion.gif"), True, False),
+            pg.transform.flip(pg.image.load("ex03/fig/explosion.gif"), False, True),
+            pg.transform.flip(pg.image.load("ex03/fig/explosion.gif"), True, True),
+        ]
+        self.image_index = 0
+        self.image = self.images[self.image_index]
+        self.rect = self.image.get_rect(center=center)
+        self.life = 30  # 爆発時間
+
+    def update(self):
+        self.life -= 1
+        if self.life > 0:
+            # lifeが0より大きい間、交互に画像を切り替えて爆発を演出
+            self.image_index = (self.image_index + 1) % len(self.images)
+            self.image = self.images[self.image_index]
+
+    def draw(self, screen: pg.Surface):
+        if self.life > 0:  # lifeが0より大きい間のみ描画
+            screen.blit(self.image, self.rect)
+
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
@@ -143,6 +167,7 @@ def main():
     bird = Bird(3, (900, 400))
     bombs = [Bomb() for _ in range(NUM_OF_BOMBS)] # BombインスタンスがNUM個並んだリスト
     beam = None
+    explosions = []
 
     clock = pg.time.Clock()
     tmr = 0
@@ -167,6 +192,10 @@ def main():
             if beam is not None and beam.rct.colliderect(bomb.rct):
                 beam = None
                 bombs[i] = None
+                explosion = Explosion(bomb.rct.center)
+                explosions.append(explosion)
+                explosion.update()
+                explosion.draw(screen)
                 bird.change_img(6, screen)
 
         bombs = [bomb for bomb in bombs if bomb is not None]
@@ -177,6 +206,9 @@ def main():
             bomb.update(screen)
         if beam is not None:
             beam.update(screen)
+        for explosion in explosions:
+            explosion.update()
+            explosion.draw(screen)
         pg.display.update()
         tmr += 1
         clock.tick(50)
